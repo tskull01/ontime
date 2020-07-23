@@ -1,1 +1,26 @@
-<p>login works!</p>
+<div>
+  <h3 *ngIf="login">Login or add sign in info to save calendar events</h3>
+  <form
+    [formGroup]="formGroup"
+    (ngSubmit)="onSubmit(formGroup.value)"
+    class="form"
+  >
+    <mat-form-field appearance="outline">
+      <mat-label>Username</mat-label>
+      <input matInput placeholder="" required formGroupName="username" />
+    </mat-form-field>
+    <mat-form-field appearance="outline">
+      <mat-label>Password</mat-label>
+      <input matInput placeholder="" required formGroupName="password" />
+    </mat-form-field>
+    <button
+      mat-raised-button
+      color="primary"
+      type="submit"
+      class="button"
+      [disabled]="!formGroup.valid"
+    >
+      Login
+    </button>
+  </form>
+</div>
