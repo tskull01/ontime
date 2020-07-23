@@ -1,6 +1,6 @@
 # Ontime
 
-This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 9.1.4.
+Personal scheduling application built using Angular 9 and faunaDB.
 
 ## Development server
 
