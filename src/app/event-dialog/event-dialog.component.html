@@ -1,0 +1,31 @@
+<h2>Create a new Event</h2>
+<br />
+<h4>Event Details</h4>
+
+<form
+  [formGroup]="formGroup"
+  (ngSubmit)="onSubmit(formGroup.value)"
+  class="form"
+>
+  <mat-form-field appearance="outline">
+    <mat-label>Event Title</mat-label>
+    <input matInput placeholder="Title" required formGroupName="title" />
+  </mat-form-field>
+  <mat-form-field appearance="outline">
+    <mat-label>Start</mat-label>
+    <input type="time" formGroupName="start" required />
+  </mat-form-field>
+  <mat-form-field appearance="outline">
+    <mat-label>End</mat-label>
+    <input type="time" formGroupName="end" required />
+  </mat-form-field>
+  <mat-form-field appearance="fill">
+    <mat-label>Urgency</mat-label>
+    <mat-select formGroupName="urgency">
+      <mat-option value="urgencyValue">Low</mat-option>
+      <mat-option value="urgencyValue">Medium</mat-option>
+      <mat-option value="urgencyValue">High </mat-option>
+    </mat-select>
+  </mat-form-field>
+  <button mat-raised-button>Create Event</button>
+</form>
