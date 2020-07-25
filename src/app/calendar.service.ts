@@ -1,9 +1,14 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable } from 'rxjs';
+import { BehaviorSubject, Observable, of } from 'rxjs';
 import { CalendarEvent } from './calendarEvent';
 import { User } from './user';
 import { HttpClient, HttpResponse } from '@angular/common/http';
 
+interface UserResponse {
+  ref: Object;
+  events: CalendarEvent[];
+}
+type UserResponsePlus = UserResponse & Response;
 @Injectable({
   providedIn: 'root',
 })
@@ -13,9 +18,10 @@ export class CalendarService {
     CalendarEvent[]
   >([]);
   currentUser: BehaviorSubject<User> = new BehaviorSubject<User>(
-    new User('', '', [])
+    new User(0, [])
   );
   response: Observable<string>;
+  loggedIn: boolean;
   constructor(private http: HttpClient) {}
   setCurrentUser(user: User) {}
   getUserEvents() {}
@@ -24,25 +30,51 @@ export class CalendarService {
     //probably firebase node function to update events
   }
   checkForUser(username, password) {
-    this.http
+    let returnObservable: BehaviorSubject<boolean> = new BehaviorSubject<
+      boolean
+    >(false);
+    let sub = this.http
       .post('/.netlify/functions/read', {
         body: JSON.stringify({ username: username, password: password }),
       })
-      .subscribe((answer: Response) => {
+      .subscribe((answer: UserResponsePlus) => {
         console.log(answer);
-        if (answer === null) {
-          //Suggest creating first event and a walk through visually
-          console.log('response null');
-        } else if (answer.status === 200) {
-          // Login successful
-        } else if (answer.status === 201) {
-          //Created user
-        } else if (answer.status === 202) {
-          // Incorrect Password
-        } else if (answer.status === 400) {
-          //Errored out
+        if (answer.events) {
+          if (answer.events.length === 0) {
+            //Suggest creating first event and a walk through visually
+            console.log('No events created for user');
+            this.currentUser.next(new User(answer.ref['@ref'].id, []));
+            returnObservable.next(true);
+          } else if (answer.events.length >= 1) {
+            // Login successful and events exist
+            console.log('login successful' + answer.ref['@ref'].id);
+            this.userEvents.next([...answer.events]);
+            this.currentUser.next(
+              new User(answer.ref['@ref'].id, answer.events)
+            );
+            sub.unsubscribe();
+            returnObservable.next(true);
+          }
+        } else {
+          if (answer.status === 201) {
+            //Created user
+            console.log('created user');
+
+            this.currentUser.next(
+              new User(answer.ref['@ref'].id, answer.events)
+            );
+            returnObservable.next(true);
+          } else if (answer.status === 202) {
+            // Incorrect Password
+            console.log('incorrect password');
+            returnObservable.next(false);
+            //display snackbar with wrong password
+          } else if (answer.status === 400) {
+            //Errored out
+          }
         }
       });
+    return returnObservable;
   }
   addUserEvent(currentUser, event: CalendarEvent) {
     //Search user push new event into events array

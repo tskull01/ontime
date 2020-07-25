@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, OnInit, ViewChild, Input } from '@angular/core';
 import {
   FullCalendarComponent,
   CalendarOptions,
@@ -21,7 +21,7 @@ export class CalenderViewComponent implements OnInit {
     initialView: 'dayGridMonth',
   };
   firstRender: boolean = true;
-
+  @Input('calendarEvents') calendarEvents: CalendarEvent[];
   @ViewChild('calendar') calender: FullCalendarComponent;
   constructor(
     public dialog: MatDialog,
@@ -29,17 +29,21 @@ export class CalenderViewComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    console.log('opened calender');
     this.firstRender = true;
   }
-  ngAfterViewChecked(): void {
+  ngAfterViewInit(): void {
     //Called after every check of the component's view. Applies to components only.
     //Add 'implements AfterViewChecked' to the class.
     let calendarApi = this.calender.getApi();
     this.calendarService.userEvents.subscribe((events: CalendarEvent[]) => {
-      events.forEach((event) => {
-        calendarApi.addEvent(event);
-      });
+      console.log(
+        'adding events' + events.forEach((event) => console.log(event))
+      );
+      this.calendarEvents = events;
+      this.calendarEvents.map((event) => calendarApi.addEvent(event));
+
+      console.log(calendarApi.getEvents());
+      calendarApi.render();
     });
     calendarApi.resumeRendering();
 
@@ -53,6 +57,7 @@ export class CalenderViewComponent implements OnInit {
   handleDateClick(e: DateClickArg) {
     let dateEvents = e.view.calendar.getEvents();
     let dialogRef = this.dialog.open(EventDialogComponent);
+    //create event and add to userEvents array on DB
   }
   handleEventClick(arg: EventClickArg) {}
 }

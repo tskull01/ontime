@@ -1,12 +1,10 @@
 import { CalendarEvent } from './calendarEvent';
 
 export class User {
-  email: string;
-  password: string;
+  id: number;
   events: CalendarEvent[];
-  constructor(email: string, password: string, events: CalendarEvent[]) {
-    this.email = email;
-    this.password = password;
+  constructor(id: number, events: CalendarEvent[]) {
+    this.id = id;
     this.events = events;
   }
 }

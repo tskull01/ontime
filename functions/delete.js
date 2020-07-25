@@ -10,11 +10,6 @@ exports.handler = (event, context, callback) => {
   client
     .query(q.Paginate(q.Documents(q.Collection("users")), { size: 5 }))
     .then((response) => {
-      console.log(response.data[0].Ref);
-      console.log(response.data[0][0]);
-
-      console.log(response.data[0]["Ref"]);
-
       return callback(null, {
         statusCode: 200,
         body: JSON.stringify(response),

@@ -1,4 +1,4 @@
-<div class="login-container">
+<div class="login-container" *ngIf="!loggedIn">
   <h2>Welcome to OnTime personal schedule manager</h2>
   <h3>Login or add sign in info to save calendar events</h3>
   <form [formGroup]="loginForm" (submit)="submit()">
@@ -35,4 +35,7 @@
     <button mat-raised-button color="primary" type="submit">Log In</button>
   </form>
 </div>
-<app-calender-view *ngIf="loggedIn"></app-calender-view>
+<app-calender-view
+  *ngIf="loggedIn"
+  [calendarEvents]="calendarEvents"
+></app-calender-view>

@@ -21,57 +21,51 @@ exports.handler = (event, context, callback) => {
   };
   const loginArray = [login.login.username];
   return client
-    .query(q.Paginate(q.Match(q.Index("search_username"), loginArray[0])))
+    .query(
+      q.Map(
+        q.Paginate(q.Match(q.Index("search_ref_username"), loginArray[0])),
+        q.Lambda("user", q.Get(q.Var("user")))
+      )
+    )
     .then((response) => {
       //getting back response data and flattening array
-      client
-        .query(
-          q.Map(
-            q.Paginate(q.Match(q.Index("all_values"))),
-            q.Lambda(["title", "start", "end", "urgency"], {
-              title: q.Var("title"),
-              start: q.Var("start"),
-              end: q.Var("end"),
-              urgency: q.Var("urgency"),
-            })
-          )
-        )
-        .then((responser) => console.log(responser));
-      console.log("original response   " + Object.values(response));
-      const responseArray = flatDeep(response.data, Infinity);
-
-      if (responseArray.length > 1) {
-        //User found
-        if (responseArray[1] === login.login.password) {
-          //Password matched send back events
-          console.log(
-            "password matched" + "Response" + responseArray[2] + responseArray
-          );
+      if (response.data[0]) {
+        const responseObject = response.data[0].data;
+        if (login.login.password === responseObject.password) {
+          //user logged in successfully and return user events
           return callback(null, {
             statusCode: 200,
-            body: JSON.stringify(responseArray[2]),
+            body: JSON.stringify({
+              ref: response.data[0].ref,
+              events: responseObject.userEvents,
+            }),
           });
         } else {
-          //Password denied suggest sign up
-          console.log("password denied");
-
+          //wrong password
           return callback(null, {
-            statusCode: 202,
-            body: "Password failed",
+            statusCode: 201,
+            body: JSON.stringify({ message: "Password invalid", status: 201 }),
           });
         }
       } else {
-        //User not found create new one with this login info
+        //user doesn't exist create one
         return client
-          .query(q.Create(q.Ref("users"), login.login))
+          .query(
+            q.Create(q.Collection("users"), {
+              data: {
+                username: login.login.username,
+                password: login.login.password,
+                userEvents: [],
+              },
+            })
+          )
           .then((response) => {
             //created user
             console.log("created user");
-
             console.log(response);
             return callback(null, {
               statusCode: 201,
-              body: JSON.stringify(`User Created ${response}`),
+              body: JSON.stringify(response),
             });
           });
       }

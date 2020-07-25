@@ -1,6 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { FormGroup, FormBuilder, Validators } from '@angular/forms';
 import { CalendarService } from '../calendar.service';
+import { CalendarEvent } from '../calendarEvent';
+import { of } from 'rxjs';
 
 @Component({
   selector: 'app-login',
@@ -10,6 +12,7 @@ import { CalendarService } from '../calendar.service';
 export class LoginComponent implements OnInit {
   loginForm: FormGroup;
   loggedIn: boolean = false;
+  calendarEvents: CalendarEvent[];
   constructor(
     private formBuilder: FormBuilder,
     private calendarService: CalendarService
@@ -20,6 +23,9 @@ export class LoginComponent implements OnInit {
       username: [null, [Validators.required]],
       password: [null, Validators.required],
     });
+    this.calendarService.userEvents.subscribe((events) => {
+      this.calendarEvents = events;
+    });
   }
 
   submit() {
@@ -27,9 +33,17 @@ export class LoginComponent implements OnInit {
       return;
     }
     console.log(this.loginForm.value.username);
-    this.calendarService.checkForUser(
+    let returnObservable = this.calendarService.checkForUser(
       this.loginForm.value.username,
       this.loginForm.value.password
     );
+    returnObservable.subscribe((answer) => {
+      answer
+        ? this.calendarService.userEvents.subscribe((events) => {
+            this.calendarEvents = events;
+            this.loggedIn = true;
+          })
+        : (this.loggedIn = false);
+    });
   }
 }
