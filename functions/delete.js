@@ -1,28 +1,30 @@
 /* Import faunaDB sdk */
-const faunadb = require('faunadb')
+const faunadb = require("faunadb");
 
-const q = faunadb.query
+const q = faunadb.query;
 const client = new faunadb.Client({
-  secret: process.env.FAUNADB_SERVER_SECRET
-})
+  secret: process.env.FAUNADB_SERVER_SECRET,
+});
 
-exports.handler = async (event, context) => {
-  const id = event.id
-  console.log(`Function 'delete' invoked. delete id: ${id}`)
-  return client
-    .query(q.Delete(q.Ref(`classes/items/${id}`)))
-    .then(response => {
-      console.log('success', response)
-      return {
+exports.handler = (event, context, callback) => {
+  client
+    .query(q.Paginate(q.Documents(q.Collection("users")), { size: 5 }))
+    .then((response) => {
+      console.log(response.data[0].Ref);
+      console.log(response.data[0][0]);
+
+      console.log(response.data[0]["Ref"]);
+
+      return callback(null, {
         statusCode: 200,
-        body: JSON.stringify(response)
-      }
+        body: JSON.stringify(response),
+      });
     })
-    .catch(error => {
-      console.log('error', error)
+    .catch((error) => {
+      console.log("error", error);
       return {
         statusCode: 400,
-        body: JSON.stringify(error)
-      }
-    })
-}
+        body: JSON.stringify(error),
+      };
+    });
+};

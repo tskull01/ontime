@@ -8,6 +8,10 @@ import {
 import { DatePointApi } from '@fullcalendar/angular';
 import { CalendarService } from '../calendar.service';
 import { User } from '../user';
+import {
+  MatFormFieldModule,
+  MatFormFieldControl,
+} from '@angular/material/form-field';
 
 @Component({
   selector: 'app-event-dialog',
@@ -21,10 +25,7 @@ export class EventDialogComponent implements OnInit {
   @Input('date') selectedDate: DatePointApi;
   @Input('currentUser') currentUser: User;
   urgencyValue: string;
-  constructor(
-    private formBuilder: FormBuilder,
-    private calenderService: CalendarService
-  ) {}
+  constructor(private calenderService: CalendarService) {}
 
   ngOnInit(): void {
     this.formGroup = new FormGroup({
@@ -34,6 +35,7 @@ export class EventDialogComponent implements OnInit {
       urgency: new FormControl(this.urgencyValue),
     });
   }
+
   toggleHalf(value) {
     switch (value) {
       case 'start':
@@ -45,7 +47,9 @@ export class EventDialogComponent implements OnInit {
     }
   }
   onSubmit(value) {
+    console.log(this.formGroup.value);
     console.log(value);
-    this.calenderService.addUserEvent(value, this.currentUser);
+
+    this.calenderService.addUserEvent(this.currentUser, value);
   }
 }

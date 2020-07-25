@@ -1,5 +1,6 @@
 import { Component, ViewChild } from '@angular/core';
 import { Router, RouterOutlet } from '@angular/router';
+import { HttpClient } from '@angular/common/http';
 
 @Component({
   selector: 'app-root',
@@ -12,6 +13,9 @@ export class AppComponent {
     //Called after the constructor, initializing input properties, and the first call to ngOnChanges.
     //Add 'implements OnInit' to the class.
     this.router.navigate(['login']);
+    this.http
+      .get('/.netlify/functions/delete')
+      .subscribe((response) => console.log(response));
   }
-  constructor(private router: Router) {}
+  constructor(private router: Router, private http: HttpClient) {}
 }

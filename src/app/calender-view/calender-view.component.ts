@@ -7,6 +7,8 @@ import {
 import { DateClickArg } from '@fullcalendar/interaction';
 import { MatDialog } from '@angular/material/dialog';
 import { EventDialogComponent } from '../event-dialog/event-dialog.component';
+import { CalendarService } from '../calendar.service';
+import { CalendarEvent } from '../calendarEvent';
 @Component({
   selector: 'app-calender-view',
   templateUrl: './calender-view.component.html',
@@ -21,7 +23,10 @@ export class CalenderViewComponent implements OnInit {
   firstRender: boolean = true;
 
   @ViewChild('calendar') calender: FullCalendarComponent;
-  constructor(public dialog: MatDialog) {}
+  constructor(
+    public dialog: MatDialog,
+    private calendarService: CalendarService
+  ) {}
 
   ngOnInit(): void {
     console.log('opened calender');
@@ -31,6 +36,11 @@ export class CalenderViewComponent implements OnInit {
     //Called after every check of the component's view. Applies to components only.
     //Add 'implements AfterViewChecked' to the class.
     let calendarApi = this.calender.getApi();
+    this.calendarService.userEvents.subscribe((events: CalendarEvent[]) => {
+      events.forEach((event) => {
+        calendarApi.addEvent(event);
+      });
+    });
     calendarApi.resumeRendering();
 
     if (this.firstRender) {
