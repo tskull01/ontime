@@ -16,6 +16,7 @@ import { HttpClientModule } from '@angular/common/http';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
+import { EditEventComponent } from './edit-event/edit-event.component';
 
 FullCalendarModule.registerPlugins([
   // register FullCalendar plugins
@@ -29,6 +30,7 @@ FullCalendarModule.registerPlugins([
     CalenderViewComponent,
     EventDialogComponent,
     LoginComponent,
+    EditEventComponent,
   ],
   imports: [
     BrowserModule,

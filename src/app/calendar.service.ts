@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable, of } from 'rxjs';
+import { BehaviorSubject, Observable, of, Subject } from 'rxjs';
 import { CalendarEvent } from './calendarEvent';
 import { User } from './user';
 import { HttpClient, HttpResponse } from '@angular/common/http';
@@ -23,6 +23,7 @@ export class CalendarService {
   );
   response: Observable<string>;
   loggedIn: boolean;
+  deleteUser: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(false);
   constructor(private http: HttpClient) {}
   setCurrentUser(user: User) {}
   getUserEvents() {}
@@ -60,17 +61,16 @@ export class CalendarService {
             );
             sub.unsubscribe();
             returnObservable.next(true);
-          }
-        } else {
-          if (answer.status === 201) {
+          } else if (answer.status === 201) {
             //Created user
             console.log('created user');
-
             this.currentUser.next(
               new User(answer.ref['@ref'].id, answer.events)
             );
             returnObservable.next(true);
-          } else if (answer.status === 202) {
+          }
+        } else {
+          if (answer.status === 202) {
             // Incorrect Password
             console.log('incorrect password');
             returnObservable.next(false);
@@ -92,6 +92,7 @@ export class CalendarService {
     //update calender
     let formattedEvent = this.formatEvents(event, this.selectedDate.value);
     previousEvents.push(formattedEvent);
+    console.log(previousEvents);
     this.http
       .post('/.netlify/functions/update', {
         body: JSON.stringify({

@@ -43,8 +43,8 @@ exports.handler = (event, context, callback) => {
         } else {
           //wrong password
           return callback(null, {
-            statusCode: 201,
-            body: JSON.stringify({ message: "Password invalid", status: 201 }),
+            statusCode: 202,
+            body: JSON.stringify({ message: "Password invalid", status: 202 }),
           });
         }
       } else {

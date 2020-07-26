@@ -1,0 +1,49 @@
+<h2>Edit Event</h2>
+<br />
+<h4>Event Details</h4>
+
+<form
+  [formGroup]="formGroup"
+  (ngSubmit)="onSubmit(formGroup.value)"
+  class="form"
+>
+  <div class="form-flex">
+    <mat-form-field appearance="outline">
+      <mat-label>Event Title</mat-label>
+      <input
+        matInput
+        placeholder="data.event"
+        required
+        formControlName="title"
+      />
+    </mat-form-field>
+    <mat-form-field appearance="outline">
+      <mat-label>Start</mat-label>
+      <input matInput type="time" formControlName="start" required />
+    </mat-form-field>
+    <mat-form-field appearance="outline">
+      <mat-label>End</mat-label>
+      <input matInput type="time" formControlName="end" required />
+    </mat-form-field>
+    <mat-form-field appearance="fill">
+      <mat-label>Urgency</mat-label>
+      <mat-select formControlName="urgency">
+        <mat-option value="low">Low</mat-option>
+        <mat-option value="medium">Medium</mat-option>
+        <mat-option value="high">High </mat-option>
+      </mat-select>
+    </mat-form-field>
+  </div>
+  <div class="editButton">
+    <button mat-raised-button [mat-dialog-close] (click)="deleteEvent()">
+      Delete Event
+    </button>
+    <button
+      mat-raised-button
+      [mat-dialog-close]
+      (click)="onSubmit(formGroup.value)"
+    >
+      Save Event
+    </button>
+  </div>
+</form>

@@ -40,6 +40,7 @@ export class LoginComponent implements OnInit {
       this.loginForm.value.password
     );
     returnObservable.subscribe((answer) => {
+      console.log(answer);
       answer
         ? this.calendarService.userEvents.subscribe((events) => {
             this.calendarEvents = events;

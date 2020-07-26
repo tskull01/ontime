@@ -11,6 +11,7 @@ import { EventDialogComponent } from '../event-dialog/event-dialog.component';
 import { CalendarService } from '../calendar.service';
 import { CalendarEvent } from '../calendarEvent';
 import { Router } from '@angular/router';
+import { EditEventComponent } from '../edit-event/edit-event.component';
 @Component({
   selector: 'app-calender-view',
   templateUrl: './calender-view.component.html',
@@ -35,6 +36,7 @@ export class CalenderViewComponent implements OnInit {
   ngOnInit(): void {
     this.firstRender = true;
     this.calendarService.selectedDate.subscribe((date) => console.log(date));
+    this.calendarService.deleteUser.subscribe((answer) => console.log(answer));
   }
   ngAfterViewInit(): void {
     //Called after every check of the component's view. Applies to components only.
@@ -77,5 +79,23 @@ export class CalenderViewComponent implements OnInit {
     //create event and add to userEvents array on DB
   }
 
-  handleEventClick(arg: EventClickArg) {}
+  handleEventClick(arg: EventClickArg) {
+    console.log(arg.event.start + ' ARGS ');
+    this.calendarService.selectedDate.next(arg.event.start);
+    let dialogRef = this.dialog.open(EditEventComponent, {
+      data: { event: arg.event.title },
+    });
+    this.calendarService.deleteUser.subscribe((bool) => {
+      if (bool) {
+        let index = this.calendarEvents.findIndex(
+          (value) => value.title === arg.event.title
+        );
+        console.log(index + ' INDEX TO DELETE ');
+        let arrayCopy = this.calendarEvents;
+        console.log(arrayCopy + 'Array copy');
+        arrayCopy.splice(index, 1);
+        this.calendarService.userEvents.next(arrayCopy);
+      }
+    });
+  }
 }
