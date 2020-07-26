@@ -32,10 +32,8 @@
       </mat-error>
     </mat-form-field>
     <br />
-    <button mat-raised-button color="primary" type="submit">Log In</button>
+    <div class="subButton">
+      <button mat-raised-button color="primary" type="submit">Log In</button>
+    </div>
   </form>
 </div>
-<app-calender-view
-  *ngIf="loggedIn"
-  [calendarEvents]="calendarEvents"
-></app-calender-view>

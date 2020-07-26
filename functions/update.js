@@ -11,23 +11,17 @@ exports.handler = (event, context, callback) => {
   const data = JSON.parse(event.body);
   console.log(data.body);
   let requestObject = JSON.parse(data.body);
+  console.log(requestObject.events);
   return client
     .query(
       q.Update(q.Ref(q.Collection(`users`), requestObject.currentUser), {
         data: {
-          userEvents: [
-            {
-              title: requestObject.title,
-              start: requestObject.start,
-              end: requestObject.end,
-              urgency: requestObject.urgency,
-            },
-          ],
+          userEvents: requestObject.events,
         },
       })
     )
     .then((response) => {
-      console.log("success", response);
+      console.log("success", response.data.userEvents);
       return {
         statusCode: 200,
         body: JSON.stringify(response),

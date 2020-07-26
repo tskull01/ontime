@@ -7,25 +7,35 @@
   (ngSubmit)="onSubmit(formGroup.value)"
   class="form"
 >
-  <mat-form-field appearance="outline">
-    <mat-label>Event Title</mat-label>
-    <input matInput placeholder="Title" required formControlName="title" />
-  </mat-form-field>
-  <mat-form-field appearance="outline">
-    <mat-label>Start</mat-label>
-    <input matInput type="time" formControlName="start" required />
-  </mat-form-field>
-  <mat-form-field appearance="outline">
-    <mat-label>End</mat-label>
-    <input matInput type="time" formControlName="end" required />
-  </mat-form-field>
-  <mat-form-field appearance="fill">
-    <mat-label>Urgency</mat-label>
-    <mat-select formControlName="urgency">
-      <mat-option value="low">Low</mat-option>
-      <mat-option value="medium">Medium</mat-option>
-      <mat-option value="high">High </mat-option>
-    </mat-select>
-  </mat-form-field>
-  <button mat-raised-button>Create Event</button>
+  <div class="form-flex">
+    <mat-form-field appearance="outline">
+      <mat-label>Event Title</mat-label>
+      <input matInput placeholder="Title" required formControlName="title" />
+    </mat-form-field>
+    <mat-form-field appearance="outline">
+      <mat-label>Start</mat-label>
+      <input matInput type="time" formControlName="start" required />
+    </mat-form-field>
+    <mat-form-field appearance="outline">
+      <mat-label>End</mat-label>
+      <input matInput type="time" formControlName="end" required />
+    </mat-form-field>
+    <mat-form-field appearance="fill">
+      <mat-label>Urgency</mat-label>
+      <mat-select formControlName="urgency">
+        <mat-option value="low">Low</mat-option>
+        <mat-option value="medium">Medium</mat-option>
+        <mat-option value="high">High </mat-option>
+      </mat-select>
+    </mat-form-field>
+  </div>
+  <div class="subButton">
+    <button
+      mat-raised-button
+      [mat-dialog-close]
+      (click)="onSubmit(formGroup.value)"
+    >
+      Create Event
+    </button>
+  </div>
 </form>

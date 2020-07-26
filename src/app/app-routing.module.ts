@@ -4,7 +4,7 @@ import { CalenderViewComponent } from './calender-view/calender-view.component';
 import { LoginComponent } from './login/login.component';
 
 const routes: Routes = [
-  { path: 'calender', component: CalenderViewComponent },
+  { path: 'calendar', component: CalenderViewComponent },
   { path: 'login', component: LoginComponent },
 ];
 

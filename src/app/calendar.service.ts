@@ -9,7 +9,6 @@ interface UserResponse {
   events: CalendarEvent[];
 }
 type UserResponsePlus = UserResponse & Response;
-interface FormattedEvent {}
 @Injectable({
   providedIn: 'root',
 })
@@ -40,7 +39,7 @@ export class CalendarService {
         body: JSON.stringify({ username: username, password: password }),
       })
       .subscribe((answer: UserResponsePlus) => {
-        console.log(answer);
+        console.log(answer.events);
         if (answer.events) {
           console.log(answer.events.length);
           if (
@@ -54,7 +53,8 @@ export class CalendarService {
           } else if (answer.events.length >= 1) {
             // Login successful and events exist
             console.log('login successful' + answer.ref['@ref'].id);
-            this.userEvents.next([...answer.events]);
+            console.log('SEtting first events ' + answer.events);
+            this.userEvents.next(answer.events);
             this.currentUser.next(
               new User(answer.ref['@ref'].id, answer.events)
             );
@@ -83,65 +83,55 @@ export class CalendarService {
       });
     return returnObservable;
   }
-  addUserEvent(currentUser: User, event: CalendarEvent) {
+  addUserEvent(
+    currentUser: User,
+    event: CalendarEvent,
+    previousEvents: CalendarEvent[]
+  ) {
     //Search user push new event into events array
     //update calender
     let formattedEvent = this.formatEvents(event, this.selectedDate.value);
+    previousEvents.push(formattedEvent);
     this.http
       .post('/.netlify/functions/update', {
         body: JSON.stringify({
-          title: formattedEvent.title,
-          start: formattedEvent.start,
-          end: formattedEvent.end,
-          urgency: formattedEvent.urgency,
+          events: previousEvents,
           currentUser: currentUser.id,
         }),
       })
-      .subscribe((response) => {
+      .subscribe((response: Response) => {
         //Added Event
-        console.log(response);
+        console.log(response['data'].userEvents);
+        this.userEvents.next(response['data'].userEvents);
       });
   }
   formatEvents(event: CalendarEvent, date: Date) {
     let formattedStart, formattedEnd;
-    console.log(date.getUTCDay());
-    if (date.getMonth() <= 9 && date.getDay() <= 9) {
-      formattedStart = `${date.getFullYear()}-0${date.getMonth()}-0${date.getDay()}T${
-        event.start
-      }:00`;
-      formattedEnd = `${date.getFullYear()}-0${date.getMonth()}-0${date.getDay()}T${
-        event.end
-      }:00`;
-    } else if (date.getMonth() <= 9 && date.getDay() >= 10) {
-      formattedStart = `${date.getFullYear()}-0${date.getMonth()}-${date.getDay()}T${
-        event.start
-      }:00`;
-      formattedEnd = `${date.getFullYear()}-0${date.getMonth()}-${date.getDay()}T${
-        event.end
-      }:00`;
-    } else if (date.getDay() <= 9) {
-      formattedStart = `${date.getFullYear()}-${date.getMonth()}-0${date.getDay()}T${
-        event.start
-      }:00`;
-      formattedEnd = `${date.getFullYear()}-${date.getMonth()}-0${date.getDay()}T${
-        event.end
-      }:00`;
+    let year = date.getFullYear();
+    let month = date.getMonth() + 1;
+    let day = date.getDate();
+    console.log(day + ' day ' + month + ' month ' + year + ' year ');
+    if (month <= 9 && day <= 9) {
+      formattedStart = `${year}-0${month}-0${day}T${event.start}:00`;
+      formattedEnd = `${year}-0${month}-0${day}T${event.end}:00`;
+    } else if (month <= 9 && day >= 10) {
+      formattedStart = `${year}-0${month}-${day}T${event.start}:00`;
+      formattedEnd = `${year}-0${month}-${day}T${event.end}:00`;
+    } else if (day <= 9) {
+      formattedStart = `${year}-${month}-0${day}T${event.start}:00`;
+      formattedEnd = `${year}-${month}-0${day}T${event.end}:00`;
     } else {
-      formattedStart = `${date.getFullYear()}-${date.getMonth()}-${date.getDay()}T${
-        event.start
-      }:00`;
-      formattedEnd = `${date.getFullYear()}-${date.getMonth()}-${date.getDay()}T${
-        event.end
-      }:00`;
+      formattedStart = `${year}-${month}-${day}T${event.start}:00`;
+      formattedEnd = `${year}-${month}-${day}T${event.end}:00`;
     }
-    let formatedObject: CalendarEvent = new CalendarEvent(
+    let formattedObject: CalendarEvent = new CalendarEvent(
       formattedStart,
       formattedEnd,
       event.title,
       event.urgency,
       event.date
     );
-    console.log(formatedObject);
-    return formatedObject;
+    console.log(formattedObject);
+    return formattedObject;
   }
 }

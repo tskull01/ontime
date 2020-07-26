@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { FormGroup, FormBuilder, Validators } from '@angular/forms';
 import { CalendarService } from '../calendar.service';
 import { CalendarEvent } from '../calendarEvent';
-import { of } from 'rxjs';
+import { Router, ActivatedRoute } from '@angular/router';
 
 @Component({
   selector: 'app-login',
@@ -15,7 +15,9 @@ export class LoginComponent implements OnInit {
   calendarEvents: CalendarEvent[];
   constructor(
     private formBuilder: FormBuilder,
-    private calendarService: CalendarService
+    private calendarService: CalendarService,
+    private router: Router,
+    private route: ActivatedRoute
   ) {}
 
   ngOnInit() {
@@ -42,6 +44,7 @@ export class LoginComponent implements OnInit {
         ? this.calendarService.userEvents.subscribe((events) => {
             this.calendarEvents = events;
             this.loggedIn = true;
+            this.router.navigate(['../calendar'], { relativeTo: this.route });
           })
         : (this.loggedIn = false);
     });
