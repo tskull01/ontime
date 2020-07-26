@@ -9,6 +9,7 @@ interface UserResponse {
   events: CalendarEvent[];
 }
 type UserResponsePlus = UserResponse & Response;
+interface FormattedEvent {}
 @Injectable({
   providedIn: 'root',
 })
@@ -17,6 +18,7 @@ export class CalendarService {
   userEvents: BehaviorSubject<CalendarEvent[]> = new BehaviorSubject<
     CalendarEvent[]
   >([]);
+  selectedDate: BehaviorSubject<Date> = new BehaviorSubject<Date>(new Date());
   currentUser: BehaviorSubject<User> = new BehaviorSubject<User>(
     new User(0, [])
   );
@@ -40,7 +42,11 @@ export class CalendarService {
       .subscribe((answer: UserResponsePlus) => {
         console.log(answer);
         if (answer.events) {
-          if (answer.events.length === 0) {
+          console.log(answer.events.length);
+          if (
+            answer.events.length === 0 ||
+            answer.events.length === undefined
+          ) {
             //Suggest creating first event and a walk through visually
             console.log('No events created for user');
             this.currentUser.next(new User(answer.ref['@ref'].id, []));
@@ -71,22 +77,71 @@ export class CalendarService {
             //display snackbar with wrong password
           } else if (answer.status === 400) {
             //Errored out
+            console.log('Error occured');
           }
         }
       });
     return returnObservable;
   }
-  addUserEvent(currentUser, event: CalendarEvent) {
+  addUserEvent(currentUser: User, event: CalendarEvent) {
     //Search user push new event into events array
     //update calender
-    this.http.post('/.netlify/functions/update', {
-      body: JSON.stringify({
-        title: event.title,
-        start: event.start,
-        end: event.end,
-        urgency: event.uregncy,
-        currentUser: currentUser.username,
-      }),
-    });
+    let formattedEvent = this.formatEvents(event, this.selectedDate.value);
+    this.http
+      .post('/.netlify/functions/update', {
+        body: JSON.stringify({
+          title: formattedEvent.title,
+          start: formattedEvent.start,
+          end: formattedEvent.end,
+          urgency: formattedEvent.urgency,
+          currentUser: currentUser.id,
+        }),
+      })
+      .subscribe((response) => {
+        //Added Event
+        console.log(response);
+      });
+  }
+  formatEvents(event: CalendarEvent, date: Date) {
+    let formattedStart, formattedEnd;
+    console.log(date.getUTCDay());
+    if (date.getMonth() <= 9 && date.getDay() <= 9) {
+      formattedStart = `${date.getFullYear()}-0${date.getMonth()}-0${date.getDay()}T${
+        event.start
+      }:00`;
+      formattedEnd = `${date.getFullYear()}-0${date.getMonth()}-0${date.getDay()}T${
+        event.end
+      }:00`;
+    } else if (date.getMonth() <= 9 && date.getDay() >= 10) {
+      formattedStart = `${date.getFullYear()}-0${date.getMonth()}-${date.getDay()}T${
+        event.start
+      }:00`;
+      formattedEnd = `${date.getFullYear()}-0${date.getMonth()}-${date.getDay()}T${
+        event.end
+      }:00`;
+    } else if (date.getDay() <= 9) {
+      formattedStart = `${date.getFullYear()}-${date.getMonth()}-0${date.getDay()}T${
+        event.start
+      }:00`;
+      formattedEnd = `${date.getFullYear()}-${date.getMonth()}-0${date.getDay()}T${
+        event.end
+      }:00`;
+    } else {
+      formattedStart = `${date.getFullYear()}-${date.getMonth()}-${date.getDay()}T${
+        event.start
+      }:00`;
+      formattedEnd = `${date.getFullYear()}-${date.getMonth()}-${date.getDay()}T${
+        event.end
+      }:00`;
+    }
+    let formatedObject: CalendarEvent = new CalendarEvent(
+      formattedStart,
+      formattedEnd,
+      event.title,
+      event.urgency,
+      event.date
+    );
+    console.log(formatedObject);
+    return formatedObject;
   }
 }

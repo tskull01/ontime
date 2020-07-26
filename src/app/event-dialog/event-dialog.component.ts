@@ -22,9 +22,8 @@ export class EventDialogComponent implements OnInit {
   startSuffix: boolean = true;
   endSuffix: boolean = true;
   formGroup: FormGroup;
-  @Input('date') selectedDate: DatePointApi;
-  @Input('currentUser') currentUser: User;
   urgencyValue: string;
+  currentUser: User;
   constructor(private calenderService: CalendarService) {}
 
   ngOnInit(): void {
@@ -34,6 +33,9 @@ export class EventDialogComponent implements OnInit {
       end: new FormControl(''),
       urgency: new FormControl(this.urgencyValue),
     });
+    this.calenderService.currentUser.subscribe(
+      (user) => (this.currentUser = user)
+    );
   }
 
   toggleHalf(value) {

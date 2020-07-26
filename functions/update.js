@@ -9,10 +9,23 @@ const client = new faunadb.Client({
 exports.handler = (event, context, callback) => {
   //get user and update array
   const data = JSON.parse(event.body);
-  const id = event.id;
-  console.log(`Function 'update' invoked. update id: ${id}`);
+  console.log(data.body);
+  let requestObject = JSON.parse(data.body);
   return client
-    .query(q.Update(q.Ref(`classes/items/${id}`), { data }))
+    .query(
+      q.Update(q.Ref(q.Collection(`users`), requestObject.currentUser), {
+        data: {
+          userEvents: [
+            {
+              title: requestObject.title,
+              start: requestObject.start,
+              end: requestObject.end,
+              urgency: requestObject.urgency,
+            },
+          ],
+        },
+      })
+    )
     .then((response) => {
       console.log("success", response);
       return {
