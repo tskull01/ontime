@@ -5,15 +5,7 @@ const q = faunadb.query;
 const client = new faunadb.Client({
   secret: process.env.FAUNADB_SERVER_SECRET,
 });
-function flatDeep(arr, d = 1) {
-  return d > 0
-    ? arr.reduce(
-        (acc, val) =>
-          acc.concat(Array.isArray(val) ? flatDeep(val, d - 1) : val),
-        []
-      )
-    : arr.slice;
-}
+
 exports.handler = (event, context, callback) => {
   const data = JSON.parse(event.body);
   const login = {
@@ -62,7 +54,6 @@ exports.handler = (event, context, callback) => {
           .then((response) => {
             //created user
             console.log("created user");
-            console.log(response);
             return callback(null, {
               statusCode: 201,
               body: JSON.stringify(response),

@@ -1,22 +1,27 @@
-import { Component, OnInit, Input } from '@angular/core';
+import { Component, OnInit, Input, Inject } from '@angular/core';
 import { EventClickArg } from '@fullcalendar/angular';
 import { FormGroup, FormControl } from '@angular/forms';
 import { CalendarService } from '../calendar.service';
 import { User } from '../user';
 import { CalendarEvent } from '../calendarEvent';
-
+import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+export interface DialogData {
+  event: any;
+}
 @Component({
   selector: 'app-edit-event',
   templateUrl: './edit-event.component.html',
   styleUrls: ['./edit-event.component.css'],
 })
 export class EditEventComponent implements OnInit {
-  @Input('data') catchingData: any;
-  @Input('event') event: EventClickArg;
   formGroup: FormGroup;
   currentUser: User;
   events: CalendarEvent[];
-  constructor(private calendarService: CalendarService) {}
+  constructor(
+    private calendarService: CalendarService,
+    public MatDialogRef: MatDialogRef<EditEventComponent>,
+    @Inject(MAT_DIALOG_DATA) public data: DialogData
+  ) {}
 
   ngOnInit(): void {
     this.formGroup = new FormGroup({

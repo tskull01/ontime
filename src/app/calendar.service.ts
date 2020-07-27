@@ -3,6 +3,7 @@ import { BehaviorSubject, Observable, of, Subject } from 'rxjs';
 import { CalendarEvent } from './calendarEvent';
 import { User } from './user';
 import { HttpClient, HttpResponse } from '@angular/common/http';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 interface UserResponse {
   ref: Object;
@@ -24,7 +25,7 @@ export class CalendarService {
   response: Observable<string>;
   loggedIn: boolean;
   deleteUser: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(false);
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient, private snackbar: MatSnackBar) {}
   setCurrentUser(user: User) {}
   getUserEvents() {}
   updateUserEvents() {
@@ -40,9 +41,8 @@ export class CalendarService {
         body: JSON.stringify({ username: username, password: password }),
       })
       .subscribe((answer: UserResponsePlus) => {
-        console.log(answer.events);
-        if (answer.events) {
-          console.log(answer.events.length);
+        console.log(answer);
+        if (answer && answer.events) {
           if (
             answer.events.length === 0 ||
             answer.events.length === undefined
@@ -64,18 +64,20 @@ export class CalendarService {
           } else if (answer.status === 201) {
             //Created user
             console.log('created user');
+            this.userEvents.next(answer.events);
             this.currentUser.next(
               new User(answer.ref['@ref'].id, answer.events)
             );
             returnObservable.next(true);
           }
+        } else if (answer.status === 202) {
+          // Incorrect Password
+          console.log('incorrect password');
+          returnObservable.next(false);
+          //display snackbar with wrong password
+          this.snackbar.open(' Incorrect Password ', '', { duration: 2000 });
         } else {
-          if (answer.status === 202) {
-            // Incorrect Password
-            console.log('incorrect password');
-            returnObservable.next(false);
-            //display snackbar with wrong password
-          } else if (answer.status === 400) {
+          if (answer.status === 400) {
             //Errored out
             console.log('Error occured');
           }
