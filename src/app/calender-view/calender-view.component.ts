@@ -1,16 +1,14 @@
-import { Component, OnInit, ViewChild, Input } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import {
   FullCalendarComponent,
   CalendarOptions,
   EventClickArg,
-  EventApi,
 } from '@fullcalendar/angular';
 import { DateClickArg } from '@fullcalendar/interaction';
 import { MatDialog } from '@angular/material/dialog';
 import { EventDialogComponent } from '../event-dialog/event-dialog.component';
 import { CalendarService } from '../calendar.service';
 import { CalendarEvent } from '../calendarEvent';
-import { Router } from '@angular/router';
 import { EditEventComponent } from '../edit-event/edit-event.component';
 @Component({
   selector: 'app-calender-view',
@@ -26,28 +24,75 @@ export class CalenderViewComponent implements OnInit {
   selectedDate: Date;
   firstRender: boolean = true;
   calendarEvents: CalendarEvent[];
+  calendarApi: any;
   @ViewChild('calendar') calender: FullCalendarComponent;
   constructor(
     public dialog: MatDialog,
-    private calendarService: CalendarService,
-    private router: Router
+    private calendarService: CalendarService
   ) {}
 
   ngOnInit(): void {
     this.firstRender = true;
-    this.calendarService.selectedDate.subscribe((date) => console.log(date));
-    this.calendarService.deleteUser.subscribe((answer) => console.log(answer));
   }
   ngAfterViewInit(): void {
     //Called after every check of the component's view. Applies to components only.
     //Add 'implements AfterViewChecked' to the class.
+    if (this.firstRender) {
+      this.calendarApi = this.calender.getApi();
+      this.calendarApi.setOption('eventClick', (e) => this.handleEventClick(e));
+      this.calendarApi.setOption('dateClick', (e) => this.handleDateClick(e));
+      this.firstRender = !this.firstRender;
+      this.eventUpdater();
+      this.calendarApi.resumeRendering();
+    } else {
+      this.calendarApi.resumeRendering();
+    }
+  }
+  handleDateClick(e: DateClickArg) {
+    //User clicked on a date
+    let dateEvents = e.view.calendar.getEvents();
+    this.calendarService.selectedDate.next(e.date);
+    this.selectedDate = e.date;
+    this.dialog.open(EventDialogComponent);
+  }
+
+  handleEventClick(arg: EventClickArg) {
+    //user selected an event
+    this.calendarService.selectedDate.next(arg.event.start);
+    let dialogRef = this.dialog.open(EditEventComponent, {
+      data: { event: arg.event.title },
+    });
+    let sub = this.calendarService.deleteEvent.subscribe((bool) => {
+      //User selected event edit option
+      if (bool) {
+        //Just a delete
+        let index = this.calendarEvents.findIndex(
+          (value) => value.title === arg.event.title
+        );
+        let arrayCopy = this.calendarEvents;
+        arrayCopy.splice(index, 1);
+        this.calendarService.userEvents.next(arrayCopy);
+        this.calendarService.updateUserEvents(false);
+        sub.unsubscribe();
+      } else {
+        //Delete and add new event
+        let index = this.calendarEvents.findIndex(
+          (value) => value.title === arg.event.title
+        );
+        let arrayCopy = this.calendarEvents;
+        arrayCopy.splice(index, 1);
+        this.calendarService.userEvents.next(arrayCopy);
+        this.calendarService.updateUserEvents(true);
+        sub.unsubscribe();
+      }
+    });
+  }
+  eventUpdater() {
     this.calender.options;
     let calendarApi = this.calender.getApi();
     this.calendarService.userEvents.subscribe((events: CalendarEvent[]) => {
-      console.log(events);
       this.calendarEvents = events;
       let flattenedEvents = [].concat.apply([], this.calendarEvents);
-      console.log(flattenedEvents);
       calendarApi.removeAllEvents();
       flattenedEvents.map((event: CalendarEvent) => {
         calendarApi.addEvent({
@@ -61,46 +106,8 @@ export class CalenderViewComponent implements OnInit {
               ? 'red'
               : 'orange',
         });
-        console.log(calendarApi.getEvents());
       });
-      console.log(calendarApi.getEvents());
       calendarApi.render();
-    });
-    calendarApi.resumeRendering();
-
-    if (this.firstRender) {
-      console.log(`setting listeners`);
-      calendarApi.setOption('eventClick', (e) => this.handleEventClick(e));
-      calendarApi.setOption('dateClick', (e) => this.handleDateClick(e));
-      this.firstRender = !this.firstRender;
-    }
-  }
-  handleDateClick(e: DateClickArg) {
-    let dateEvents = e.view.calendar.getEvents();
-    console.log(e.date);
-    this.calendarService.selectedDate.next(e.date);
-    this.selectedDate = e.date;
-    this.dialog.open(EventDialogComponent);
-    //create event and add to userEvents array on DB
-  }
-
-  handleEventClick(arg: EventClickArg) {
-    console.log(arg.event.start + ' ARGS ');
-    this.calendarService.selectedDate.next(arg.event.start);
-    let dialogRef = this.dialog.open(EditEventComponent, {
-      data: { event: arg.event.title },
-    });
-    this.calendarService.deleteUser.subscribe((bool) => {
-      if (bool) {
-        let index = this.calendarEvents.findIndex(
-          (value) => value.title === arg.event.title
-        );
-        console.log(index + ' INDEX TO DELETE ');
-        let arrayCopy = this.calendarEvents;
-        console.log(arrayCopy + 'Array copy');
-        arrayCopy.splice(index, 1);
-        this.calendarService.userEvents.next(arrayCopy);
-      }
     });
   }
 }

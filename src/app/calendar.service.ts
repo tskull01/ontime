@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable, of, Subject } from 'rxjs';
 import { CalendarEvent } from './calendarEvent';
 import { User } from './user';
-import { HttpClient, HttpResponse } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
 interface UserResponse {
@@ -22,15 +22,30 @@ export class CalendarService {
   currentUser: BehaviorSubject<User> = new BehaviorSubject<User>(
     new User(0, [])
   );
+  eventEdited: Subject<boolean> = new Subject<boolean>();
   response: Observable<string>;
   loggedIn: boolean;
-  deleteUser: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(false);
+  deleteEvent: Subject<boolean> = new Subject<boolean>();
   constructor(private http: HttpClient, private snackbar: MatSnackBar) {}
   setCurrentUser(user: User) {}
   getUserEvents() {}
-  updateUserEvents() {
+  updateUserEvents(updateThenAdd) {
     //make a copy in the event and then send the result here
-    //probably firebase node function to update events
+    //update then add is a boolean that controls adding another event after the delete
+    let sub = this.http
+      .post('/.netlify/functions/update', {
+        body: JSON.stringify({
+          events: this.userEvents.value,
+          currentUser: this.currentUser.value.id,
+        }),
+      })
+      .subscribe((response: Response) => {
+        //Added Event
+        console.log(response['data'].userEvents);
+        this.eventEdited.next(updateThenAdd);
+        this.userEvents.next(response['data'].userEvents);
+        sub.unsubscribe();
+      });
   }
   checkForUser(username, password) {
     let returnObservable: BehaviorSubject<boolean> = new BehaviorSubject<
@@ -94,8 +109,8 @@ export class CalendarService {
     //update calender
     let formattedEvent = this.formatEvents(event, this.selectedDate.value);
     previousEvents.push(formattedEvent);
-    console.log(previousEvents);
-    this.http
+    console.log(previousEvents + ' PREVIOUS EVENTS ');
+    let sub = this.http
       .post('/.netlify/functions/update', {
         body: JSON.stringify({
           events: previousEvents,
@@ -104,8 +119,9 @@ export class CalendarService {
       })
       .subscribe((response: Response) => {
         //Added Event
-        console.log(response['data'].userEvents);
+        console.log(response['data'].userEvents + ' EVENTS AFTER UPDATE');
         this.userEvents.next(response['data'].userEvents);
+        sub.unsubscribe();
       });
   }
   formatEvents(event: CalendarEvent, date: Date) {

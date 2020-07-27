@@ -1,17 +1,7 @@
-import { Component, OnInit, Input } from '@angular/core';
-import {
-  FormBuilder,
-  FormGroup,
-  FormControl,
-  Validators,
-} from '@angular/forms';
-import { DatePointApi } from '@fullcalendar/angular';
+import { Component, OnInit } from '@angular/core';
+import { FormGroup, FormControl } from '@angular/forms';
 import { CalendarService } from '../calendar.service';
 import { User } from '../user';
-import {
-  MatFormFieldModule,
-  MatFormFieldControl,
-} from '@angular/material/form-field';
 import { CalendarEvent } from '../calendarEvent';
 
 @Component({
@@ -63,7 +53,6 @@ export class EventDialogComponent implements OnInit {
       value.urgency,
       this.calenderService.selectedDate.value.toDateString()
     );
-    console.log(newEvent.date + '    NEW EVENT DATE');
     this.calenderService.addUserEvent(this.currentUser, newEvent, this.events);
   }
 }

@@ -34,13 +34,11 @@ export class LoginComponent implements OnInit {
     if (!this.loginForm.valid) {
       return;
     }
-    console.log(this.loginForm.value.username);
     let returnObservable = this.calendarService.checkForUser(
       this.loginForm.value.username,
       this.loginForm.value.password
     );
     returnObservable.subscribe((answer) => {
-      console.log(answer);
       answer
         ? this.calendarService.userEvents.subscribe((events) => {
             this.calendarEvents = events;
