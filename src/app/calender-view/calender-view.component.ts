@@ -54,7 +54,12 @@ export class CalenderViewComponent implements OnInit {
           title: event.title,
           start: event.start,
           end: event.end,
-          backgroundColor: 'blue',
+          backgroundColor:
+            event.urgency === 'low'
+              ? 'blue'
+              : event.urgency === 'high'
+              ? 'red'
+              : 'orange',
         });
         console.log(calendarApi.getEvents());
       });
